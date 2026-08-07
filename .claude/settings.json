@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -c 'if .stop_hook_active then empty else {decision:\"block\", reason:\"Before stopping: if this session revealed non-obvious project knowledge (commands, constraints, gotchas), propose a CLAUDE.md addition for the user to approve. Otherwise stop silently.\"} end'",
+            "timeout": 10,
+            "statusMessage": "Checking CLAUDE.md..."
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg: #0b0e11;
+  --color-panel: #161a1e;
+  --color-panel2: #1e2329;
+  --color-border: #2b3139;
+  --color-up: #0ecb81;
+  --color-down: #f6465d;
+  --color-accent: #f0b90b;
+  --color-muted: #848e9c;
+  --color-text: #eaecef;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* Price flash animation (used by components/PriceCell.tsx) */
+@keyframes flash-up {
+  from {
+    color: var(--color-up);
+    background-color: rgba(14, 203, 129, 0.16);
+  }
+  to {
+    color: var(--color-text);
+    background-color: transparent;
+  }
+}
+
+@keyframes flash-down {
+  from {
+    color: var(--color-down);
+    background-color: rgba(246, 70, 93, 0.16);
+  }
+  to {
+    color: var(--color-text);
+    background-color: transparent;
+  }
+}
+
+.animate-flash-up {
+  animation: flash-up 0.7s ease-out;
+}
+
+.animate-flash-down {
+  animation: flash-down 0.7s ease-out;
+}
