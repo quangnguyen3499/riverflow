@@ -134,7 +134,7 @@ export function useMarketFeed(): void {
   useEffect(() => {
     // ?nodata=1 must skip the SOCKET too, not just REST. Suppressing `refreshSnapshot` alone does
     // not demo an outage any more: since Task 15 a failed snapshot with a live socket renders the
-    // tickers-only table, so the real stream refilled `tickers` and the "unreachable market-data source" demo
+    // tickers-only table, so the real stream refilled `tickers` and the "unreachable market-data-source" demo
     // painted 50 live rows about a second after load. Unreachable means unreachable — no socket, so
     // `tickers` stays empty and MarketsTable's rows.length === 0 && marketsError branch yields
     // <DataUnavailable />.
@@ -201,7 +201,7 @@ export function useMarketFeed(): void {
       else rerankFromTickers();
       // Both QA switches leave effect 2 without a socket AND without a subscribed stream, so
       // falling through would call wsManager.connect() with an empty registry — which builds
-      // `?streams=` (rejected by market-data source) — and, in nodata mode, would open the very stream the
+      // `?streams=` (rejected by market-data-source) — and, in nodata mode, would open the very stream the
       // demo is asserting is unreachable the first time the tab is re-focused.
       if (QA_OFFLINE || QA_NODATA) return;
       if (

@@ -19,8 +19,8 @@
 | Audience | General portfolio piece for winning client work |
 | Trading depth | Paper trading, no login — $100k demo balance in localStorage |
 | Stack | Next.js (App Router) + TypeScript + Tailwind CSS, deployed on Vercel Hobby |
-| Visual style | Pro Terminal (market-data source-like dark, dense, green/red) for market pages; cleaner fintech touches on Portfolio |
-| Architecture | Hybrid browser-direct: market-data source WebSocket in the browser + cached CoinGecko proxy routes |
+| Visual style | Pro Terminal (market-data-source-like dark, dense, green/red) for market pages; cleaner fintech touches on Portfolio |
+| Architecture | Hybrid browser-direct: market-data-source WebSocket in the browser + cached CoinGecko proxy routes |
 | Charting | lightweight-charts `lightweight-charts` v5 (Apache-2.0, attribution logo on) |
 | Working name | "Riverflow" (placeholder branding, rename anytime) |
 
@@ -29,7 +29,7 @@
 ### 3.1 Markets — `/` (landing page, the first impression)
 - **Trending strip** at top: the 15 CoinGecko trending coins as horizontal cards (logo, symbol, price, 24h %). Data from `/api/trending`.
 - **Top-50 table** below: rank, logo, name/symbol, live price, 24h %, 24h volume, market cap, 7-day sparkline, star toggle.
-  - Metadata + initial prices from `/api/markets`; live prices overlaid from the market-data source all-market ticker stream.
+  - Metadata + initial prices from `/api/markets`; live prices overlaid from the market-data-source all-market ticker stream.
   - Price cells flash green/red on each change.
   - Row click → coin detail; star click → watchlist (event does not navigate).
 - Header (all pages): logo, nav (Markets · Watchlist · Portfolio), demo cash balance chip, connection badge, ⌘K search.
@@ -56,11 +56,11 @@
 
 No custom backend. Two external data sources, joined in the browser.
 
-### 4.1 market-data source (browser-direct, keyless — facts verified 2026-08-02)
-- **WebSocket:** `wss://data-stream.market-data source.vision` (official market-data-only mirror; fallback `wss://stream.market-data source.com:443`). One shared connection, combined streams:
+### 4.1 market-data-source (browser-direct, keyless — facts verified 2026-08-02)
+- **WebSocket:** `wss://data-stream.market-data-source.vision` (official market-data-only mirror; fallback `wss://stream.market-data-source.com:443`). One shared connection, combined streams:
   - `!miniTicker@arr` — all-market mini tickers (1s cadence) → powers Markets table, Watchlist, Portfolio P&L.
   - `<symbol>@kline_<interval>` — subscribed only while a chart is open.
-- **REST:** `https://data-api.market-data source.vision` for kline history (`/api/v3/klines`) and the tradable-pair list (`/api/v3/exchangeInfo`).
+- **REST:** `https://data-api.market-data-source-source.vision` for kline history (`/api/v3/klines`) and the tradable-pair list (`/api/v3/exchangeInfo`).
 - Limits that shape the design: 1024 streams/connection, 24h max connection life, server ping every 20s (browser auto-pongs), 6000 request-weight/min/IP — all far above our usage.
 
 ### 4.2 CoinGecko (server-proxied via Next.js route handlers)
@@ -70,19 +70,19 @@ No custom backend. Two external data sources, joined in the browser.
 - Footer shows "Powered by CoinGecko" (required attribution).
 
 ### 4.3 Symbol mapping (the one tricky join)
-- CoinGecko identifies coins by id (`bitcoin`); market-data source by pair (`BTCUSDT`).
+- CoinGecko identifies coins by id (`bitcoin`); market-data-source by pair (`BTCUSDT`).
 - `lib/symbol-map.ts`: candidate pair = `UPPER(symbol) + "USDT"`, validated against `exchangeInfo` (status `TRADING`, quote `USDT`). exchangeInfo fetched client-side once per session and cached in memory.
 - Unmapped coins are first-class: they render with CoinGecko data (60s refresh) and never show a broken row. Stablecoins (USDT itself) show flat price, no live stream.
 
 ### 4.4 State (Zustand)
-- `market` (in-memory): live prices/24h stats keyed by market-data source symbol; polling-mode data merges into the same shape so consumers don't care about the source.
+- `market` (in-memory): live prices/24h stats keyed by market-data-source symbol; polling-mode data merges into the same shape so consumers don't care about the source.
 - `watchlist` (persisted): array of CoinGecko ids.
 - `portfolio` (persisted): `cash` (starts 100_000), `holdings` {coinId → qty, avgCost}, `trades[]`.
 - localStorage persistence via zustand/persist; corrupt/missing storage falls back to defaults silently.
 
 ### 4.5 Paper-trading rules
 - Prices in USD; USDT treated as 1 USD.
-- Fee: 0.1% of notional per trade (market-data source taker fee), shown before confirm.
+- Fee: 0.1% of notional per trade (market-data-source taker fee), shown before confirm.
 - **Buy:** cost = qty × price × 1.001; require cost ≤ cash. New avgCost = (oldQty × oldAvg + qty × price) / (oldQty + qty). (Fee reduces cash, not avgCost.)
 - **Sell:** require qty ≤ held. Proceeds = qty × price × 0.999 → cash. Realized P&L = qty × (price − avgCost), stored on the trade record. avgCost unchanged; position removed at qty 0.
 - Unrealized P&L = qty × (livePrice − avgCost).
@@ -105,8 +105,8 @@ components/
   TradePanel, PortfolioSummary, HoldingsTable, TradeHistory,
   ConnectionBadge, CommandPalette (⌘K), EmptyState, ResetDialog
 lib/
-  market-data source/ws-manager.ts # singleton: subscribe/unsubscribe, reconnect, status, fallback trigger
-  market-data source/rest.ts       # klines, exchangeInfo (mirror base URL + fallback)
+  market-data-source/ws-manager.ts # singleton: subscribe/unsubscribe, reconnect, status, fallback trigger
+  market-data-source/rest.ts       # klines, exchangeInfo (mirror base URL + fallback)
   coingecko.ts          # server-side fetchers used by route handlers
   symbol-map.ts
   trading.ts            # pure buy/sell/P&L math (unit-test target)
@@ -122,8 +122,8 @@ Boundaries: components read stores and never touch the network; `ws-manager` wri
 | Failure | Behavior |
 |---|---|
 | WS drops | Auto-reconnect with exponential backoff (1s → 30s cap); badge shows "reconnecting"; last prices stay on screen (grayed after 60s staleness) |
-| market-data source geo-blocked (REST 451 / WS won't open on both hosts) | Switch to polling mode: `market` store refreshes from `/api/markets` every 30s; slim banner "Live streaming unavailable in your region — prices refresh every 30s"; everything else works identically |
-| CoinGecko route error/rate-limit | Serve stale cache when available; trending strip hides on hard failure; table falls back to market-data source-only data (no logos/ranks) rather than blanking |
+| market-data-source geo-blocked (REST 451 / WS won't open on both hosts) | Switch to polling mode: `market` store refreshes from `/api/markets` every 30s; slim banner "Live streaming unavailable in your region — prices refresh every 30s"; everything else works identically |
+| CoinGecko route error/rate-limit | Serve stale cache when available; trending strip hides on hard failure; table falls back to market-data-source-only data (no logos/ranks) rather than blanking |
 | Chart data fails | Skeleton → retry button; page otherwise functional |
 | Corrupt localStorage | Reset to defaults silently |
 | WS 24h connection age / tab wake from sleep | Proactive reconnect on `visibilitychange` + staleness check |
@@ -133,7 +133,7 @@ Boundaries: components read stores and never touch the network; `ws-manager` wri
 
 - **Vitest (unit):** `trading.ts` (avg cost, fees, realized/unrealized P&L, insufficient-funds edges), `symbol-map.ts` (mapped/unmapped/stablecoin cases), `ws-manager` reconnect + fallback logic against a mock WebSocket, route handlers with mocked fetch.
 - **Playwright (smoke):** one flow — land on Markets, see prices, star a coin, open detail, buy, verify Portfolio shows the position and Watchlist shows the star. Run with mocked network fixtures so CI never depends on live APIs.
-- **Demo-day checklist (README):** phone check, adblock on, market-data source blocked (force polling via query flag `?polling=1`), throttled 3G first paint, reset-demo works.
+- **Demo-day checklist (README):** phone check, adblock on, market-data-source blocked (force polling via query flag `?polling=1`), throttled 3G first paint, reset-demo works.
 
 ## 8. Compliance and footer fine print
 

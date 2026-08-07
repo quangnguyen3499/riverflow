@@ -1,8 +1,8 @@
 import type { Candle } from '@/lib/types';
 
 export const REST_HOSTS = [
-  'https://data-api.market-data source.vision',
-  'https://api.market-data source.com',
+  'https://data-api.market-data-source-source.vision',
+  'https://api.market-data-source.com',
 ] as const;
 
 export class GeoBlockedError extends Error {}      // thrown on HTTP 451 from all hosts

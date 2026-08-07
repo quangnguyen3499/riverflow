@@ -19,7 +19,7 @@ vi.mock('@/lib/market-data/markets', async (importOriginal) => ({
 import { fetchMarketSnapshot, tradablePairs } from '@/lib/market-data/markets';
 
 describe('mapMiniTickers', () => {
-  it('maps raw market-data source miniTicker fields (s,c,o,h,l,q,E) to LiveTicker', () => {
+  it('maps raw market-data-source miniTicker fields (s,c,o,h,l,q,E) to LiveTicker', () => {
     const raw = [
       {
         e: '24hrMiniTicker',

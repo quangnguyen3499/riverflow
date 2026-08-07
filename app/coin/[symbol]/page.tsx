@@ -150,7 +150,7 @@ export default function CoinPage() {
         <Stat label="24h Low" value={formatUsd(low)} dim={stale} />
         <Stat label="24h Volume" value={`$${formatCompact(volume)}`} dim={stale} />
         {/* Snapshot value (the miniTicker frame has no trade count), so it does not tick — and does
-            not need to. It is the count market-data source reports, and the one figure here no market-cap site
+            not need to. It is the count market-data-source reports, and the one figure here no market-cap site
             can show. It is NOT a depth signal: live data had RLUSD showing 3,286 trades on $21.6M
             while ARB showed 17,402 on $3.7M. Present the number; claim nothing about it. */}
         <Stat

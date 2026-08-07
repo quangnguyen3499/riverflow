@@ -7,19 +7,19 @@
   only — do not act on it or extend it unless asked.
 
 ## Data sources (verified against live API 2026-08-03)
-- **market-data source is the only crypto upstream.** Browser calls it directly (keyless, CORS-open).
+- **market-data-source is the only crypto upstream.** Browser calls it directly (keyless, CORS-open).
   Two REST calls total: `ticker/24hr` and
   `exchangeInfo?showPermissionSets=false&symbolStatus=TRADING` — those params are
   mandatory: without them the response is 17.4 MB instead of 2.5 MB, for a provably
-  identical TRADING+USDT set. Stream: `wss://data-stream.market-data source.vision`.
-- Use `data-api.market-data source.vision`; `api.market-data source.com` returns HTTP 451 from US IPs.
+  identical TRADING+USDT set. Stream: `wss://data-stream.market-data-source.vision`.
+- Use `data-api.market-data-source-source-source.vision`; `api.market-data-source.com` returns HTTP 451 from US IPs.
 - **CoinGecko has been removed entirely** — no route handlers, no key, no attribution.
 - Markets table is **crypto-only**: a pure volume ranking puts USD Coin above Bitcoin at #1
   and surfaces tokenized Nvidia/Intel. Stablecoins, fiat, metals and tokenized equities
   (base ends in "B", except BNB/SHIB/ARB) are excluded; the caption discloses it.
 - Coin names come from a bundled static map; logos from 483 bundled CC0 SVGs in public/coins/.
 - `wsManager`: always `subscribe()` BEFORE `connect()` — connecting with zero streams
-  requests `?streams=` which market-data source rejects, and 4 such failures fake an outage.
+  requests `?streams=` which market-data-source rejects, and 4 such failures fake an outage.
 - **Always `rm -rf .next` before `npx tsc --noEmit`** — a stale `.next/dev/types/validator.ts`
   referencing deleted routes makes tsc exit 1 on a build artifact, not on your source.
 - lightweight-charts is client-only ('use client' + useEffect) and requires the
@@ -65,7 +65,7 @@
 - **`npm` is aliased to `sfw npm`** (Socket Firewall). Its injected `NODE_EXTRA_CA_CERTS` breaks ALL
   server-side TLS inside the dev server, so `/api/stocks` returns 502 `upstream` and looks like
   broken code. Use `node node_modules/next/dist/bin/next dev --port <p>` when testing route
-  handlers. The crypto pages are immune — the browser fetches market-data source directly.
+  handlers. The crypto pages are immune — the browser fetches market-data-source directly.
 - **`vitest.setup.ts` is required, not optional.** Node 26 defines a global `localStorage` that
   evaluates to `undefined`, so vitest won't copy jsdom's real Storage onto the global. Keep
   `setupFiles: ['./vitest.setup.ts']` in `vitest.config.ts` — removing it breaks every store test.
@@ -95,7 +95,7 @@
 
 ## Docs
 - Crypto design spec: docs/superpowers/specs/2026-08-02-crypto-trading-demo-design.md
-  (written pre-rewrite — the market-data source-only data layer supersedes its CoinGecko sections)
+  (written pre-rewrite — the market-data-source-only data layer supersedes its CoinGecko sections)
 - Stocks page spec: docs/superpowers/specs/2026-08-02-stocks-page-design.md
 - Implementation plan: docs/superpowers/plans/2026-08-02-crypto-trading-demo.md (24 tasks;
-  Tasks 11–12 were struck and rewritten for market-data source-only, and tasks 25–28 add the stocks page)
+  Tasks 11–12 were struck and rewritten for market-data-source-only, and tasks 25–28 add the stocks page)

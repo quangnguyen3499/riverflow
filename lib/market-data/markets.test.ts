@@ -281,9 +281,9 @@ describe('fetchMarketSnapshot', () => {
     await fetchMarketSnapshot();
 
     const urls = fetchMock.mock.calls.map((c) => c[0]);
-    expect(urls).toContain('https://data-api.market-data source.vision/api/v3/ticker/24hr');
+    expect(urls).toContain('https://data-api.market-data-source-source.vision/api/v3/ticker/24hr');
     expect(urls).toContain(
-      'https://data-api.market-data source.vision/api/v3/exchangeInfo?showPermissionSets=false&symbolStatus=TRADING',
+      'https://data-api.market-data-source-source.vision/api/v3/exchangeInfo?showPermissionSets=false&symbolStatus=TRADING',
     );
     expect(urls).toHaveLength(2);
   });
@@ -309,7 +309,7 @@ describe('fetchMarketSnapshot', () => {
 
   it('falls back to the second host when the primary fails for one of the two calls', async () => {
     const fetchMock = route((url) => {
-      if (url.startsWith('https://data-api.market-data source.vision') && url.includes('/ticker/24hr')) {
+      if (url.startsWith('https://data-api.market-data-source-source.vision') && url.includes('/ticker/24hr')) {
         return jsonResponse({ msg: 'oops' }, 500);
       }
       return happyPath(url);
@@ -318,7 +318,7 @@ describe('fetchMarketSnapshot', () => {
     const coins = await fetchMarketSnapshot();
 
     expect(fetchMock.mock.calls.map((c) => c[0])).toContain(
-      'https://api.market-data source.com/api/v3/ticker/24hr',
+      'https://api.market-data-source.com/api/v3/ticker/24hr',
     );
     expect(coins.map((c) => c.id)).toEqual(['btc', 'eth']);
   });

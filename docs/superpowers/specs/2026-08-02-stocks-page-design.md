@@ -53,7 +53,7 @@ Read-only is also honest about the data: you cannot credibly "execute at the cur
 
 ### 2.2 Chart reuse: a behaviour-preserving extraction
 
-The requirement is to reuse `CandleChart`. Today's `components/CandleChart.tsx` is welded to market-data source — it imports `fetchKlines`, `wsManager` and `useMarket`, and its props are `{ pair, coinId }`. A stock cannot use it as-is, and copy-pasting 120 lines of chart setup would leave two drifting chart themes.
+The requirement is to reuse `CandleChart`. Today's `components/CandleChart.tsx` is welded to market-data-source — it imports `fetchKlines`, `wsManager` and `useMarket`, and its props are `{ pair, coinId }`. A stock cannot use it as-is, and copy-pasting 120 lines of chart setup would leave two drifting chart themes.
 
 **Decision: split the file in two, keeping `CandleChart`'s public props identical so `app/coin/[symbol]/page.tsx` is not edited at all.**
 
@@ -76,7 +76,7 @@ export interface CandleChartCanvasProps {
 
 Two effects inside the canvas: one creates/destroys the chart (deps `[height]`), one calls `series.setData(...)` + `timeScale().fitContent()` whenever the `candles` array identity changes. `useImperativeHandle` exposes `update`, which calls `series.update(...)`.
 
-Risk and how it is contained: this edits working crypto code. It is a pure move — no logic changes, no prop changes, no new dependencies — and it is verified by re-running the existing Task 19 visual checklist (`/coin/btc`: 500 candles, live last-candle growth, all five timeframe buttons, resize, lightweight-charts attribution logo visible, Retry on blocked market-data source, `/coin/usdt` sparkline fallback) before any stocks work starts.
+Risk and how it is contained: this edits working crypto code. It is a pure move — no logic changes, no prop changes, no new dependencies — and it is verified by re-running the existing Task 19 visual checklist (`/coin/btc`: 500 candles, live last-candle growth, all five timeframe buttons, resize, lightweight-charts attribution logo visible, Retry on blocked market-data-source, `/coin/usdt` sparkline fallback) before any stocks work starts.
 
 ### 2.3 Route handlers + client hook, not React Server Components
 
@@ -149,7 +149,7 @@ This turns a missing feature into a visibly deliberate one, which reads better t
 ### 3.3 Global shell changes
 
 - **Nav** (`app/layout.tsx`): add `Stocks` between `Markets` and `Watchlist`, same `text-sm text-muted hover:text-text` styling, with a tiny `EOD` tag after the label so the caveat is visible before the click.
-- **Connection badge** (`components/ConnectionBadge.tsx`): the badge currently reads `⚡ Live` from the market-data source socket state. On a stocks route that is actively misleading. Add one branch — `const onStocks = usePathname().startsWith('/stocks')` — and when true render the neutral `EOD` variant (`text-muted`, no lightning bolt, `title="End-of-day data — stocks do not stream"`) instead of the crypto status. This is the only functional change to an existing component outside the chart extraction.
+- **Connection badge** (`components/ConnectionBadge.tsx`): the badge currently reads `⚡ Live` from the market-data-source socket state. On a stocks route that is actively misleading. Add one branch — `const onStocks = usePathname().startsWith('/stocks')` — and when true render the neutral `EOD` variant (`text-muted`, no lightning bolt, `title="End-of-day data — stocks do not stream"`) instead of the crypto status. This is the only functional change to an existing component outside the chart extraction.
 - **Footer**: no change. Deliberately **no** "Powered by Massive/Polygon" credit — see §8.
 
 ### 3.4 `DelayedBadge`
@@ -413,7 +413,7 @@ Backoff rules in `lib/massive.ts`: treat **both 429 and 403** as rate-limit sign
 - `app/api/stocks/[ticker]/route.test.ts`: `expect(revalidate).toBe(86400)`; `AAPL` succeeds; `aapl123` and `ZZZZZZZ` return `404` with **zero** calls into `lib/massive` (assert the mock was not called — this is the quota guard); a name-lookup rejection still yields `200` with `name: null`.
 
 **Regression guard on the chart extraction**
-- Re-run the Task 19 crypto checklist manually before merging: `/coin/btc` renders ~500 candles, the last candle grows live, all five timeframes reload, resize follows the container, the lightweight-charts attribution logo is present, blocking market-data source shows the Retry overlay, and `/coin/usdt` still falls back to the sparkline.
+- Re-run the Task 19 crypto checklist manually before merging: `/coin/btc` renders ~500 candles, the last candle grows live, all five timeframes reload, resize follows the container, the lightweight-charts attribution logo is present, blocking market-data-source shows the Retry overlay, and `/coin/usdt` still falls back to the sparkline.
 - `npx vitest run` must stay fully green — in particular `stores/portfolio.test.ts` (9 tests) and `lib/trading.test.ts`, which prove §2.1's promise that the portfolio was not touched.
 
 **Playwright — `e2e/stocks.spec.ts`, all network mocked**

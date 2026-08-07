@@ -22,7 +22,7 @@ export interface CandleChartCanvasProps {
   onRetry?: () => void;
   /** Replaces the default error message. The crypto wrapper passes
    *  `<DataUnavailable compact detail="Chart data unavailable." />` (Task 19); the stock wrapper
-   *  omits it, because that component's Retry re-fetches the market-data source snapshot. */
+   *  omits it, because that component's Retry re-fetches the market-data-source snapshot. */
   errorNode?: ReactNode;
   height?: number;
   ref?: Ref<CandleChartHandle>;

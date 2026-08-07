@@ -29,7 +29,7 @@ It finishes with a `Preview:` URL. Open it and confirm the Markets page loads wi
 npx vercel env ls production   # expect: nothing, or STOCKS_DATA_MODE=fixture
 ```
 
-The crypto pages talk to market-data source directly from the browser with no key, so they need nothing.
+The crypto pages talk to market-data-source directly from the browser with no key, so they need nothing.
 
 **Leave `MASSIVE_API_KEY` out of the deployed environment entirely.** The stocks page defaults to
 synthetic fixture data and only calls Massive when `STOCKS_DATA_MODE` is exactly `live`, so a
@@ -94,7 +94,7 @@ and no attribution is required.
 | `npx vitest run` | **259 passed** (15 files) |
 | `npx playwright test` | **1 passed** — markets → star → coin detail → buy → portfolio → watchlist |
 | `npm run build` | ✓ Compiled; routes `/`, `/coin/[symbol]`, `/watchlist`, `/portfolio`, `/stocks`, `/stocks/[ticker]`, `/api/stocks`, `/api/stocks/[ticker]` |
-| Crypto path uses no server routes | ✓ the browser calls market-data source directly; the only `app/api/*` routes are the two stocks handlers, which exist solely to keep the Massive key server-side |
+| Crypto path uses no server routes | ✓ the browser calls market-data-source directly; the only `app/api/*` routes are the two stocks handlers, which exist solely to keep the Massive key server-side |
 | Fixture default holds | ✓ a build carrying a real `MASSIVE_API_KEY` with `STOCKS_DATA_MODE` unset served synthetic data (ZENITH/HELIOS), and `/api/stocks/AAPL` 404s |
 | No horizontal scroll at 380px | ✓ all six pages measured `doc=380 client=380` |
 | `rm -rf .next && npx tsc --noEmit` | exit 0 |

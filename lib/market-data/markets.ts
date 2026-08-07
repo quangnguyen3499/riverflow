@@ -97,7 +97,7 @@ export const TICKER_B_ALLOWLIST = new Set(['BNB', 'SHIB', 'ARB']);
 export const NON_B_EQUITY_BASES = new Set<string>();
 
 /**
- * Tokenized equities and ETFs (NVDAB, INTCB, CRCLB, QQQB, SPYB, TSLAB, ...): real, liquid market-data source
+ * Tokenized equities and ETFs (NVDAB, INTCB, CRCLB, QQQB, SPYB, TSLAB, ...): real, liquid market-data-source
  * USDT markets that are not crypto markets.
  *
  * A RULE, not an enumeration, because an enumeration cannot be maintained. The 8-name list this
@@ -147,7 +147,7 @@ export function isFallbackPair(pair: string): boolean {
   return pair.endsWith('USDT') && isCryptoBase(pair.slice(0, -4));
 }
 
-// NOTE: there is deliberately NO leveraged-token regex. market-data source has retired every BLVT UP/DOWN
+// NOTE: there is deliberately NO leveraged-token regex. market-data-source has retired every BLVT UP/DOWN
 // token, so the current TRADING USDT set contains ZERO leveraged tokens — a /(UP|DOWN|BULL|BEAR)$/
 // filter has no true positives left to catch and produces only false ones, deleting JUP (Jupiter)
 // and SYRUP. Listing hygiene comes from exchangeInfo's TRADING status (which excludes ~20 halted

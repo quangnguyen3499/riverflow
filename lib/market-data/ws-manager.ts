@@ -1,8 +1,8 @@
 import type { ConnectionStatus } from '@/lib/types';
 
 export const WS_HOSTS = [
-  'wss://data-stream.market-data source.vision',
-  'wss://stream.market-data source.com:443',
+  'wss://data-stream.market-data-source.vision',
+  'wss://stream.market-data-source.com:443',
 ] as const;
 
 export type WsListener = (data: unknown) => void;

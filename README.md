@@ -10,7 +10,7 @@ no backend, no API keys, no real money.
 
 - Top-50 **crypto** markets table — price, 24h %, a live 24h **range bar**, 24h volume
   and the 24h **trade count**, with price, %, range and volume **all streamed live**
-  from the market-data source `!miniTicker@arr` WebSocket; price cells flash green/red on every
+  from the market-data-source `!miniTicker@arr` WebSocket; price cells flash green/red on every
   tick. Stablecoins, fiat, tokenized metals and tokenized equities are excluded from
   the ranking — on a raw volume ranking the source's biggest USDT market is USD Coin, and
   a crypto table headed by a stablecoin reads as broken data. The caption says so.
@@ -25,7 +25,7 @@ no backend, no API keys, no real money.
 - Honest failure states: if the stream drops, prices freeze and are stamped with the
   time they were last true (`?offline=1` demos it); if the market snapshot fails but
   the stream is alive, the table keeps ticking and says only rankings are missing;
-  if market-data source is unreachable entirely, the app says so rather than faking data
+  if market-data-source is unreachable entirely, the app says so rather than faking data
   (`?nodata=1` demos it)
 - **US equities, end-of-day:** `/stocks` ranks the last completed US session into Top
   Gainers / Top Losers / Most Active from a single whole-market request, with a daily
@@ -64,9 +64,9 @@ npm run test:e2e    # Playwright smoke flow — fully mocked network, safe for C
 ## Architecture
 
 ```
-Browser ────────────────► wss://data-stream.market-data source.vision    live !miniTicker@arr + klines
-   │                      https://data-api.market-data source.vision     ticker/24hr, exchangeInfo, klines
-   │                        fallback ──► api.market-data source.com       (keyless, no server, no key)
+Browser ────────────────► wss://data-stream.market-data-source.vision    live !miniTicker@arr + klines
+   │                      https://data-api.market-data-source-source-source.vision     ticker/24hr, exchangeInfo, klines
+   │                        fallback ──► api.market-data-source.com       (keyless, no server, no key)
    │
    └──► Next.js route handlers ────► api.massive.com          US equities, end-of-day
          /api/stocks          (12h cache)                     (Bearer key, server-side only)
@@ -92,7 +92,7 @@ the Massive key must never reach the browser.
   and their 24h trade count. Rank does not even need the network: the 5-minute
   re-rank re-sorts locally from the live volumes the socket already delivered, so
   it issues no request at all.
-- **The coin universe** is every market-data source USDT spot pair that is `TRADING`, did over
+- **The coin universe** is every market-data-source USDT spot pair that is `TRADING`, did over
   $1M of 24h quote volume, and is a crypto asset — roughly **100–115 coins** out of
   ~479 TRADING USDT pairs (those figures drift daily and nothing asserts them). The
   table renders the top 50 by volume; the rest are kept in the store so deep links
@@ -104,14 +104,14 @@ the Massive key must never reach the browser.
   50 visible rows with dollar proxies holding 43.6% of the visible volume. Equity
   tokens are caught by a rule (base ends in `B`, minus a three-name allowlist for BNB,
   SHIB and ARB) rather than a hand-kept list, because `exchangeInfo` carries no marker
-  for them and market-data source keeps adding more. The trade-off is that real volume is hidden;
+  for them and market-data-source keeps adding more. The trade-off is that real volume is hidden;
   the table's caption discloses the filter.
-- **`rank` is a 24h-volume rank, not a market-cap rank.** market-data source cannot supply
+- **`rank` is a 24h-volume rank, not a market-cap rank.** market-data-source cannot supply
   market cap and there is no second source, so the column does not exist rather
   than being fabricated. The table caption states the ranking basis.
-- **Coin names** come from a bundled static map (`lib/coin-names.ts`) — market-data source
+- **Coin names** come from a bundled static map (`lib/coin-names.ts`) — market-data-source
   returns none. Names do not change, so a hardcoded dictionary has no staleness
-  failure mode, and it keeps working when market-data source is unreachable, which is what
+  failure mode, and it keeps working when market-data-source is unreachable, which is what
   makes the offline states possible.
 - **Coin logos** are CC0 SVGs bundled into `public/coins/` with a generated
   manifest (`lib/coin-icons.ts`), so there is no CDN to 404 or be blocked, and they

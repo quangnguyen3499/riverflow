@@ -56,7 +56,7 @@ const tickerFixture: RawTicker24h[] = [
     count: 50_000,
   },
   // Tradable, USDT-quoted, and the HIGHEST volume here — so on a pure volume ranking it heads the
-  // table, which is exactly what happens against live market-data source (USD Coin $908M vs Bitcoin $518M).
+  // table, which is exactly what happens against live market-data-source (USD Coin $908M vs Bitcoin $518M).
   // The crypto-only universe filter is the only thing that drops it. Its `count` is the measured
   // live figure and is a reminder that trade count is not a depth signal.
   {
@@ -77,7 +77,7 @@ const klinesFixture = [
 ];
 
 /** Single handler for both market-data hosts, so nothing can silently reach the real network. */
-async function market-data source(route: Route, request: Request) {
+async function market-data-source(route: Route, request: Request) {
   const url = request.url();
   // `includes`, not equality: the real request carries ?showPermissionSets=false&symbolStatus=TRADING,
   // which shrinks that payload from 17.4 MB to 2.49 MB for an identical result.
@@ -89,8 +89,8 @@ async function market-data source(route: Route, request: Request) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.route('https://data-api.market-data source.vision/**', market-data source);
-  await page.route('https://api.market-data source.com/**', market-data source);
+  await page.route('https://data-api.market-data-source-source.vision/**', market-data-source);
+  await page.route('https://api.market-data-source.com/**', market-data-source);
 });
 
 test('smoke: markets → star → coin detail → buy → portfolio → watchlist', async ({ page }) => {

@@ -200,7 +200,7 @@ export default function PortfolioPage() {
           <section>
             {/* Every column here is a stored historical fact — including realized P&L, which was
                 computed at execution time. None of it depends on a live price, so this table is
-                fully correct even with market-data source unreachable. */}
+                fully correct even with market-data-source unreachable. */}
             <h2 className="mb-2 text-sm font-semibold text-muted">Trade History</h2>
             <div className="overflow-x-auto rounded-lg border border-border bg-panel">
               <table className="w-full text-sm">

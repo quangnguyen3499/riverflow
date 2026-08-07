@@ -1,4 +1,4 @@
-/** Uppercase market-data source base asset → display name. Display only; NEVER an identity lookup
+/** Uppercase market-data-source base asset → display name. Display only; NEVER an identity lookup
  *  (identity is `CoinMarket.id`, the lowercase base asset). the source's REST API returns no
  *  human-readable names at all, so this map is the only source of them in the app. */
 export const COIN_NAMES: Record<string, string> = {

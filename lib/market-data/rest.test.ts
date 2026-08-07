@@ -22,7 +22,7 @@ const RAW_KLINES = [
   [1722556860000, '67241.50', '67300.00', '67100.00', '67150.00', '98.7', 1722556919999, '6630000.00', 388, '48.2', '3240000.00', '0'],
 ];
 
-// Raw /api/v3/ticker/24hr rows. market-data source returns every numeric as a string.
+// Raw /api/v3/ticker/24hr rows. market-data-source returns every numeric as a string.
 const RAW_24HR = [
   {
     symbol: 'BTCUSDT',
@@ -67,7 +67,7 @@ describe('fetchKlines', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://data-api.market-data source.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=500',
+      'https://data-api.market-data-source-source.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=500',
       expect.objectContaining({ signal: expect.anything() }),
     );
     expect(candles).toEqual([
@@ -83,7 +83,7 @@ describe('fetchKlines', () => {
     await fetchKlines('ETHUSDT', '1h', 42);
 
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://data-api.market-data source.vision/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=42',
+      'https://data-api.market-data-source-source.vision/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=42',
       expect.objectContaining({ signal: expect.anything() }),
     );
   });
@@ -99,7 +99,7 @@ describe('fetchKlines', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(fetchMock.mock.calls[1][0]).toBe(
-      'https://api.market-data source.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=500',
+      'https://api.market-data-source.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=500',
     );
     expect(candles).toHaveLength(2);
   });
@@ -148,7 +148,7 @@ describe('fetchTradablePairs', () => {
     // The filtered query string is required: the bare endpoint is 17.4 MB raw / 316 KB gzipped,
     // this one is 2.49 MB / 51.6 KB for a provably identical TRADING+USDT set (479 symbols).
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://data-api.market-data source.vision/api/v3/exchangeInfo?showPermissionSets=false&symbolStatus=TRADING',
+      'https://data-api.market-data-source-source.vision/api/v3/exchangeInfo?showPermissionSets=false&symbolStatus=TRADING',
       expect.objectContaining({ signal: expect.anything() }),
     );
     expect(pairs).toEqual(new Set(['BTCUSDT', 'ETHUSDT']));
@@ -164,7 +164,7 @@ describe('fetchTradablePairs', () => {
     const pairs = await fetchTradablePairs();
 
     expect(fetchMock.mock.calls[1][0]).toBe(
-      'https://api.market-data source.com/api/v3/exchangeInfo?showPermissionSets=false&symbolStatus=TRADING',
+      'https://api.market-data-source.com/api/v3/exchangeInfo?showPermissionSets=false&symbolStatus=TRADING',
     );
     expect(pairs.has('BTCUSDT')).toBe(true);
     expect(pairs.has('ETHBTC')).toBe(false);
@@ -180,7 +180,7 @@ describe('fetch24hrTickers', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock).toHaveBeenCalledWith(
-      'https://data-api.market-data source.vision/api/v3/ticker/24hr',
+      'https://data-api.market-data-source-source.vision/api/v3/ticker/24hr',
       expect.objectContaining({ signal: expect.anything() }),
     );
     // Raw pass-through: parsing and filtering belong to buildCoinMarkets, not here.
@@ -196,7 +196,7 @@ describe('fetch24hrTickers', () => {
 
     const rows = await fetch24hrTickers();
 
-    expect(fetchMock.mock.calls[1][0]).toBe('https://api.market-data source.com/api/v3/ticker/24hr');
+    expect(fetchMock.mock.calls[1][0]).toBe('https://api.market-data-source.com/api/v3/ticker/24hr');
     expect(rows).toHaveLength(2);
   });
 

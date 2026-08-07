@@ -98,7 +98,7 @@ describe('connection lifecycle', () => {
     manager.connect();
     expect(factory).toHaveBeenCalledTimes(1);
     expect(sockets[0].url).toBe(
-      'wss://data-stream.market-data source.vision/stream?streams=!miniTicker@arr/btcusdt@kline_1m',
+      'wss://data-stream.market-data-source.vision/stream?streams=!miniTicker@arr/btcusdt@kline_1m',
     );
     expect(sockets[0].url.startsWith(WS_HOSTS[0])).toBe(true);
   });
@@ -323,7 +323,7 @@ describe('reconnect, backoff, host rotation', () => {
     sockets[0].simulateFailure();
     vi.advanceTimersByTime(1_000);
     expect(sockets[1].url).toBe(
-      'wss://stream.market-data source.com:443/stream?streams=!miniTicker@arr/ethusdt@kline_1m',
+      'wss://stream.market-data-source.com:443/stream?streams=!miniTicker@arr/ethusdt@kline_1m',
     );
 
     sockets[1].simulateOpen();

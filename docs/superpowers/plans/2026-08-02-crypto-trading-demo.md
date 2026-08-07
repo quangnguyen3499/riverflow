@@ -36,10 +36,10 @@ lib/
   types.ts                   # shared domain types
   format.ts                  # price/percent/compact formatting
   trading.ts                 # pure paper-trading math (fees, avg cost, P&L)
-  symbol-map.ts              # CoinGecko symbol → market-data source pair
+  symbol-map.ts              # CoinGecko symbol → market-data-source pair
   coingecko.ts               # server-side CoinGecko fetchers
-  market-data source/rest.ts            # klines + tradable pairs, host fallback, GeoBlockedError
-  market-data source/ws-manager.ts      # singleton WS: combined streams, reconnect, status
+  market-data-source/rest.ts            # klines + tradable pairs, host fallback, GeoBlockedError
+  market-data-source/ws-manager.ts      # singleton WS: combined streams, reconnect, status
 stores/
   market.ts                  # live tickers + metadata + connection status (in-memory)
   watchlist.ts               # persisted starred coin ids
@@ -58,7 +58,7 @@ Boundaries: components read stores and never touch the network; `ws-manager` is 
 | 2 | Domain types | 14 | ConnectionBadge, GeoBanner, TrendingStrip |
 | 3 | Formatting helpers | 15 | MarketsTable |
 | 4 | Paper-trading math | 16 | CommandPalette, ResetDialog |
-| 5 | market-data source REST client | 17 | App shell (layout, header, footer) |
+| 5 | market-data-source REST client | 17 | App shell (layout, header, footer) |
 | 6 | Symbol mapping | 18 | Markets page |
 | 7 | WebSocket manager | 19 | CandleChart + coin detail page |
 | 8 | Watchlist store | 20 | TradePanel |
@@ -829,7 +829,7 @@ Depends on Task 1 (Vitest configured, `@` alias) and Task 2 (`lib/types.ts` with
 
   Expected: no output, exit code 0.
 
-### Task 5: market-data source REST client (`lib/market-data/rest.ts`)
+### Task 5: market-data-source REST client (`lib/market-data/rest.ts`)
 
 Keyless REST access to market data with host fallback and geo-block detection (spec §4.1, §6). `fetchKlines` seeds the candlestick chart (Task 19); `fetchTradablePairs` feeds the symbol map (Task 6) and the market store (Task 10). Both try `REST_HOSTS` in order, throw `GeoBlockedError` only when **every** host answers HTTP 451, and rethrow the last error otherwise.
 
@@ -888,7 +888,7 @@ Keyless REST access to market data with host fallback and geo-block detection (s
 
       expect(fetchMock).toHaveBeenCalledTimes(1);
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://data-api.market-data source.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=500',
+        'https://data-api.market-data-source-source.vision/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=500',
       );
       expect(candles).toEqual([
         { time: 1722556800, open: 67000, high: 67500, low: 66800, close: 67241.5 },
@@ -903,7 +903,7 @@ Keyless REST access to market data with host fallback and geo-block detection (s
       await fetchKlines('ETHUSDT', '1h', 42);
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://data-api.market-data source.vision/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=42',
+        'https://data-api.market-data-source-source.vision/api/v3/klines?symbol=ETHUSDT&interval=1h&limit=42',
       );
     });
 
@@ -918,7 +918,7 @@ Keyless REST access to market data with host fallback and geo-block detection (s
 
       expect(fetchMock).toHaveBeenCalledTimes(2);
       expect(fetchMock.mock.calls[1][0]).toBe(
-        'https://api.market-data source.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=500',
+        'https://api.market-data-source.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=500',
       );
       expect(candles).toHaveLength(2);
     });
@@ -965,7 +965,7 @@ Keyless REST access to market data with host fallback and geo-block detection (s
       const pairs = await fetchTradablePairs();
 
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://data-api.market-data source.vision/api/v3/exchangeInfo',
+        'https://data-api.market-data-source-source.vision/api/v3/exchangeInfo',
       );
       expect(pairs).toEqual(new Set(['BTCUSDT', 'ETHUSDT']));
     });
@@ -979,7 +979,7 @@ Keyless REST access to market data with host fallback and geo-block detection (s
 
       const pairs = await fetchTradablePairs();
 
-      expect(fetchMock.mock.calls[1][0]).toBe('https://api.market-data source.com/api/v3/exchangeInfo');
+      expect(fetchMock.mock.calls[1][0]).toBe('https://api.market-data-source.com/api/v3/exchangeInfo');
       expect(pairs.has('BTCUSDT')).toBe(true);
       expect(pairs.has('ETHBTC')).toBe(false);
     });
@@ -1002,8 +1002,8 @@ Keyless REST access to market data with host fallback and geo-block detection (s
   import type { Candle } from '@/lib/types';
 
   export const REST_HOSTS = [
-    'https://data-api.market-data source.vision',
-    'https://api.market-data source.com',
+    'https://data-api.market-data-source-source.vision',
+    'https://api.market-data-source.com',
   ] as const;
 
   export class GeoBlockedError extends Error {}      // thrown on HTTP 451 from all hosts
@@ -1105,7 +1105,7 @@ Keyless REST access to market data with host fallback and geo-block detection (s
 
 ### Task 6: Symbol mapping (`lib/symbol-map.ts`)
 
-The one tricky join (spec §4.3): CoinGecko identifies coins by lowercase ticker symbol (`"btc"`), market-data source by pair (`"BTCUSDT"`). `pairFor` builds the candidate pair `UPPER(symbol) + "USDT"` and validates it against the tradable-pair set from Task 5's `fetchTradablePairs`. Unmapped coins and USDT itself return `null` — callers render those with CoinGecko data only (no live stream), never a broken row.
+The one tricky join (spec §4.3): CoinGecko identifies coins by lowercase ticker symbol (`"btc"`), market-data-source by pair (`"BTCUSDT"`). `pairFor` builds the candidate pair `UPPER(symbol) + "USDT"` and validates it against the tradable-pair set from Task 5's `fetchTradablePairs`. Unmapped coins and USDT itself return `null` — callers render those with CoinGecko data only (no live stream), never a broken row.
 
 **Files:**
 - Create: `lib/symbol-map.ts`
@@ -1192,14 +1192,14 @@ The one tricky join (spec §4.3): CoinGecko identifies coins by lowercase ticker
 
   Expected: PASS — all test files pass (Tasks 2–6), exit code 0.
 
-### Task 7: market-data source WebSocket manager (`lib/market-data/ws-manager.ts`)
+### Task 7: market-data-source WebSocket manager (`lib/market-data/ws-manager.ts`)
 
-The shared client-side WebSocket singleton (spec §4.1, §6): one combined-stream connection, subscribe/unsubscribe by stream name, auto-reconnect with exponential backoff (1s → 30s cap), host rotation between the two market-data source endpoints, and a transition to `'polling'` after 4 consecutive failures — while polling, a low-frequency 30s retry timer keeps attempting fresh connect cycles so the stream recovers on its own. Fully unit-tested against a `MockWebSocket` injected through the constructor's socket factory — no real network anywhere.
+The shared client-side WebSocket singleton (spec §4.1, §6): one combined-stream connection, subscribe/unsubscribe by stream name, auto-reconnect with exponential backoff (1s → 30s cap), host rotation between the two market-data-source endpoints, and a transition to `'polling'` after 4 consecutive failures — while polling, a low-frequency 30s retry timer keeps attempting fresh connect cycles so the stream recovers on its own. Fully unit-tested against a `MockWebSocket` injected through the constructor's socket factory — no real network anywhere.
 
 Behavior decisions (local to this module, consistent with the contracts):
 
 - Initial status is `'connecting'` (before `connect()` is ever called). `onStatus` only fires on *changes*, so a listener registered before `connect()` sees `'streaming'` as its first event.
-- Streams subscribed before/at connect time go into the combined-stream URL (`<host>/stream?streams=a/b/c`). Streams added while the socket is already OPEN are attached live via a `{"method":"SUBSCRIBE","params":[...],"id":n}` message (market-data source supports this on combined streams); streams added while the socket is still CONNECTING are sent as SUBSCRIBE messages on open. When the last listener of a stream unsubscribes on an open socket, an UNSUBSCRIBE message is sent.
+- Streams subscribed before/at connect time go into the combined-stream URL (`<host>/stream?streams=a/b/c`). Streams added while the socket is already OPEN are attached live via a `{"method":"SUBSCRIBE","params":[...],"id":n}` message (market-data-source supports this on combined streams); streams added while the socket is still CONNECTING are sent as SUBSCRIBE messages on open. When the last listener of a stream unsubscribes on an open socket, an UNSUBSCRIBE message is sent.
 - Every non-manual close counts as one consecutive failure and rotates to the other host; a successful open resets the failure count (so backoff restarts at 1s after any good connection). The 4th consecutive failure sets status `'polling'`, but the manager does NOT give up permanently: it schedules a low-frequency retry every 30s that attempts a fresh connect cycle. Status stays `'polling'` during those attempts (no status churn); a successful open returns status to `'streaming'` and normal operation resumes. Each failed 30s attempt keeps rotating hosts and schedules the next 30s retry. `connect()` while polling cancels the pending 30s retry and starts over immediately at host 0.
 - `disconnect()` detaches all handlers before closing, clears any pending retry timer (both the backoff timer and the 30s polling retry timer), and leaves the status value untouched (no reconnect is ever triggered by a manual close).
 - `backoffDelay(failure)` is exported so the 30s cap is directly unit-testable (only 3 backoff waits ever happen before polling kicks in, so the cap can't be reached through the state machine alone).
@@ -1314,7 +1314,7 @@ Behavior decisions (local to this module, consistent with the contracts):
       manager.connect();
       expect(factory).toHaveBeenCalledTimes(1);
       expect(sockets[0].url).toBe(
-        'wss://data-stream.market-data source.vision/stream?streams=!miniTicker@arr/btcusdt@kline_1m',
+        'wss://data-stream.market-data-source.vision/stream?streams=!miniTicker@arr/btcusdt@kline_1m',
       );
       expect(sockets[0].url.startsWith(WS_HOSTS[0])).toBe(true);
     });
@@ -1547,7 +1547,7 @@ Behavior decisions (local to this module, consistent with the contracts):
       sockets[0].simulateFailure();
       vi.advanceTimersByTime(1_000);
       expect(sockets[1].url).toBe(
-        'wss://stream.market-data source.com:443/stream?streams=!miniTicker@arr/ethusdt@kline_1m',
+        'wss://stream.market-data-source.com:443/stream?streams=!miniTicker@arr/ethusdt@kline_1m',
       );
 
       sockets[1].simulateOpen();
@@ -1714,8 +1714,8 @@ Behavior decisions (local to this module, consistent with the contracts):
   import type { ConnectionStatus } from '@/lib/types';
 
   export const WS_HOSTS = [
-    'wss://data-stream.market-data source.vision',
-    'wss://stream.market-data source.com:443',
+    'wss://data-stream.market-data-source.vision',
+    'wss://stream.market-data-source.com:443',
   ] as const;
 
   export type WsListener = (data: unknown) => void;
@@ -2471,7 +2471,7 @@ Error: Failed to resolve import "@/stores/market" from "stores/market.test.ts". 
  Test Files  1 failed (1)
 ```
 
-- [ ] **Step 3: Implement the market store.** Create `stores/market.ts` (NOT persisted; initial status `'connecting'`; `pairForCoin` joins `coins` with `pairFor` from Task 6; `priceFor` = live ticker price if mapped and present, else `CoinMarket.price`, else `undefined` for unknown coins). Two details beyond the plain setters: `setStatus('polling')` also **empties the tickers map** — in polling mode the 30s `/api/markets` refresh is the only source of truth (spec §4.4), and a stale WS ticker would otherwise shadow the freshly polled price forever; and `marketsError` (initially `false`) records that `/api/markets` failed while `coins` is still empty, which Task 15's `MarketsTable` uses to switch to its market-data source-only fallback instead of an endless skeleton:
+- [ ] **Step 3: Implement the market store.** Create `stores/market.ts` (NOT persisted; initial status `'connecting'`; `pairForCoin` joins `coins` with `pairFor` from Task 6; `priceFor` = live ticker price if mapped and present, else `CoinMarket.price`, else `undefined` for unknown coins). Two details beyond the plain setters: `setStatus('polling')` also **empties the tickers map** — in polling mode the 30s `/api/markets` refresh is the only source of truth (spec §4.4), and a stale WS ticker would otherwise shadow the freshly polled price forever; and `marketsError` (initially `false`) records that `/api/markets` failed while `coins` is still empty, which Task 15's `MarketsTable` uses to switch to its market-data-source-only fallback instead of an endless skeleton:
 
 ```ts
 import { create } from 'zustand';
@@ -2548,14 +2548,14 @@ Expected output:
       Tests  12 passed (12)
 ```
 
-- [ ] **Step 5: Write the failing mapper test.** Create `hooks/use-market-feed.test.ts`. Only the pure mapper `mapMiniTickers` is unit-tested; the effect wiring gets a manual verification (Step 12, executed inside Task 17's visual check). Raw market-data source miniTicker fields: `s` pair, `c` close, `o` open, `h` high, `l` low, `q` quote volume, `E` event time ms — numeric fields arrive as strings:
+- [ ] **Step 5: Write the failing mapper test.** Create `hooks/use-market-feed.test.ts`. Only the pure mapper `mapMiniTickers` is unit-tested; the effect wiring gets a manual verification (Step 12, executed inside Task 17's visual check). Raw market-data-source miniTicker fields: `s` pair, `c` close, `o` open, `h` high, `l` low, `q` quote volume, `E` event time ms — numeric fields arrive as strings:
 
 ```ts
 import { describe, expect, it } from 'vitest';
 import { mapMiniTickers } from '@/hooks/use-market-feed';
 
 describe('mapMiniTickers', () => {
-  it('maps raw market-data source miniTicker fields (s,c,o,h,l,q,E) to LiveTicker', () => {
+  it('maps raw market-data-source miniTicker fields (s,c,o,h,l,q,E) to LiveTicker', () => {
     const raw = [
       {
         e: '24hrMiniTicker',
@@ -2628,7 +2628,7 @@ Error: Failed to resolve import "@/hooks/use-market-feed" from "hooks/use-market
 
   1. **`refreshMarkets()` is a module-level export taking no arguments** — `MarketsTable`'s Retry button (Task 15) imports and calls it directly. It writes only to the global store, so a response that lands after unmount is harmless: no cancellation flag is needed (the store call is idempotent — the last write wins and no React component state is touched).
   2. **Error policy:** a failed `/api/markets` sets `marketsError` **only when `coins` is still empty**; when we already hold good data the failure is swallowed and the last snapshot stays on screen. A successful fetch always clears the flag. `/api/trending` failures never touch `marketsError` — an empty trending strip is not an outage.
-  3. **Two refresh timers.** An unconditional 60s interval re-fetches `/api/markets` regardless of connection status, so unmapped coins (no market-data source pair) track CoinGecko's own 60s cache instead of freezing at their first value (spec §3.2 / §4.3 / §4.5). On top of that, the 30s interval runs *only* while `status === 'polling'`, where CoinGecko is the sole price source. Both are cleared on unmount.
+  3. **Two refresh timers.** An unconditional 60s interval re-fetches `/api/markets` regardless of connection status, so unmapped coins (no market-data-source pair) track CoinGecko's own 60s cache instead of freezing at their first value (spec §3.2 / §4.3 / §4.5). On top of that, the 30s interval runs *only* while `status === 'polling'`, where CoinGecko is the sole price source. Both are cleared on unmount.
   4. **Zombie-socket replacement on `visibilitychange`.** After laptop sleep a socket can stay `OPEN` while delivering nothing, and `connect()` is idempotent — it would see an open socket and do nothing. So when the tab becomes visible with `status === 'streaming'` but no frame for over 60s, `disconnect()` runs first, then `connect()`. Visibility restore also triggers `refreshMarkets()`.
 
   Every effect returns a cleanup so React Strict Mode double-invocation is safe (`wsManager.connect()` is idempotent, subscriptions return unsubscribers):
@@ -2741,7 +2741,7 @@ export function useMarketFeed(): void {
   }, []);
 
   // 3) Baseline refresh: every 60s in EVERY mode, matching /api/markets' cache window.
-  //    Coins without a market-data source pair have no WS ticks, so this is their only price update.
+  //    Coins without a market-data-source pair have no WS ticks, so this is their only price update.
   useEffect(() => {
     const id = setInterval(() => void refreshMarkets(), BASELINE_REFRESH_MS);
     return () => clearInterval(id);
@@ -3846,9 +3846,9 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
 
 - [ ] **Step 1: Create `components/MarketsTable.tsx`**
 
-  Joins `useMarket` coins + tickers + pairs: each coin resolves its market-data source pair via `pairFor(coin.symbol, pairs)`; when a live ticker exists it overrides price / 24h % / volume, otherwise CoinGecko values render (unmapped coins are first-class). Staleness: prices gray at 50% opacity when the last WS message is older than 60s **and** status is not `'polling'` (polling data is refreshed on its own 30s cadence and must not gray). Row click navigates; the star button stops propagation so it never navigates. The `hydrated` flag defers starred-state rendering until after mount to avoid a hydration mismatch with the persisted watchlist store.
+  Joins `useMarket` coins + tickers + pairs: each coin resolves its market-data-source pair via `pairFor(coin.symbol, pairs)`; when a live ticker exists it overrides price / 24h % / volume, otherwise CoinGecko values render (unmapped coins are first-class). Staleness: prices gray at 50% opacity when the last WS message is older than 60s **and** status is not `'polling'` (polling data is refreshed on its own 30s cadence and must not gray). Row click navigates; the star button stops propagation so it never navigates. The `hydrated` flag defers starred-state rendering until after mount to avoid a hydration mismatch with the persisted watchlist store.
 
-  CoinGecko-outage fallback: when `marketsError` is true and `coins` is still empty, the table synthesizes market-data source-only rows from the live `tickers` map — USDT-quoted pairs that exist in `pairs`, sorted by `volume24h` descending, top 50, symbol = pair with the `USDT` suffix stripped then lowercased, name = symbol uppercased, no logo/rank/sparkline — plus a slim notice ("Coin metadata unavailable — showing live market-data source data only") and a Retry button that calls `refreshMarkets()` from `@/hooks/use-market-feed` to re-trigger the markets fetch.
+  CoinGecko-outage fallback: when `marketsError` is true and `coins` is still empty, the table synthesizes market-data-source-only rows from the live `tickers` map — USDT-quoted pairs that exist in `pairs`, sorted by `volume24h` descending, top 50, symbol = pair with the `USDT` suffix stripped then lowercased, name = symbol uppercased, no logo/rank/sparkline — plus a slim notice ("Coin metadata unavailable — showing live market-data-source data only") and a Retry button that calls `refreshMarkets()` from `@/hooks/use-market-feed` to re-trigger the markets fetch.
 
   ```tsx
   'use client';
@@ -3891,7 +3891,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
         );
       }
 
-      // CoinGecko outage → synthesize market-data source-only rows from the live tickers map.
+      // CoinGecko outage → synthesize market-data-source-only rows from the live tickers map.
       const fallbackRows = Object.values(tickers)
         .filter((t) => t.pair.endsWith('USDT') && pairs.has(t.pair))
         .sort((a, b) => b.volume24h - a.volume24h)
@@ -3907,7 +3907,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
             role="status"
             className="flex items-center justify-between gap-3 rounded border border-accent/40 bg-accent/10 px-3 py-2 text-xs text-accent"
           >
-            <span>Coin metadata unavailable — showing live market-data source data only</span>
+            <span>Coin metadata unavailable — showing live market-data-source data only</span>
             <button
               type="button"
               onClick={() => void refreshMarkets()}
@@ -3918,7 +3918,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
           </div>
           {fallbackRows.length === 0 ? (
             <div className="rounded-lg border border-border bg-panel p-8 text-center text-sm text-muted">
-              Waiting for live market-data source data…
+              Waiting for live market-data-source data…
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-border bg-panel">
@@ -4118,7 +4118,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
   - Clicking a star turns it yellow-filled (★) **without navigating**; clicking it again empties it. Reload the page — starred rows persist (localStorage).
   - Clicking anywhere else on a row changes the URL to `/coin/<symbol>` (e.g. `/coin/btc`) — a 404 is **expected** until Task 19; press Back.
   - Staleness spot-check (optional): in DevTools → Network, set throttling to "Offline" and wait ~60–70 seconds. The badge shows "Reconnecting" and all price and 24h % cells dim to 50% opacity. Restore "No throttling" — prices resume flashing and the dimming clears.
-  - CoinGecko-outage fallback spot-check (optional): in DevTools → Network, add a request-blocking rule for `*/api/markets*` and reload. The amber notice "Coin metadata unavailable — showing live market-data source data only" appears above a slim market-data source-only table (SYMBOL name, live flashing price, 24h %, volume — no logos, ranks, or sparklines), sorted by volume with BTC/ETH near the top. Remove the blocking rule and click **Retry** — the full 50-row table with logos returns.
+  - CoinGecko-outage fallback spot-check (optional): in DevTools → Network, add a request-blocking rule for `*/api/markets*` and reload. The amber notice "Coin metadata unavailable — showing live market-data-source data only" appears above a slim market-data-source-only table (SYMBOL name, live flashing price, 24h %, volume — no logos, ranks, or sparklines), sorted by volume with BTC/ETH near the top. Remove the blocking rule and click **Retry** — the full 50-row table with logos returns.
 
   Stop the dev server when done.
 
@@ -4604,7 +4604,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
   - Open `http://localhost:3000/?polling=1` — the slim amber GeoBanner ("Live streaming unavailable — prices refresh every 30s") appears just below the header, and it stays visible when you navigate to `/watchlist` and `/portfolio` (the banner is mounted globally in the layout).
 
   Feed wiring checks (deferred from Task 10 Step 12 — the provider is only now mounted):
-  - The header badge reads "⚡ Live" (streaming), prices tick within ~3s of load, and DevTools → Network → WS shows one connection to `data-stream.market-data source.vision` receiving `!miniTicker@arr` frames.
+  - The header badge reads "⚡ Live" (streaming), prices tick within ~3s of load, and DevTools → Network → WS shows one connection to `data-stream.market-data-source.vision` receiving `!miniTicker@arr` frames.
   - Load `http://localhost:3000/?polling=1` — no WebSocket opens (Network → WS is empty), and the Network tab shows `/api/markets` re-fetched every 30 seconds (the polling timer; the always-on 60s baseline refresh coincides with every second one, so an occasional doubled request is expected).
   - Stay on `http://localhost:3000` in streaming mode for two minutes without touching the tab — the Network tab still shows one `/api/markets` request per minute (the baseline refresh that keeps unmapped coins moving).
   - Switch to another tab for over a minute, then return — the badge cycles reconnecting → streaming without a reload (visibilitychange reconnect: a silent-but-open socket is dropped and replaced), and one `/api/markets` request fires immediately on return.
@@ -4614,7 +4614,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
 **Files:**
 - Modify: `app/page.tsx` (replace the create-next-app scaffold entirely)
 
-- [ ] **Step 1: Replace `app/page.tsx`** — client page composing `TrendingStrip` + `MarketsTable`, with pulse skeletons while `useMarket().coins` is still empty (first paint before `/api/markets` resolves). The skeleton gate is `coins.length === 0 && !marketsError`: once `marketsError` flips true the wait is over — `/api/markets` failed with nothing cached — so the real components mount and `MarketsTable` renders its market-data source-only fallback (notice + Retry, Task 15) instead of the page pulsing forever. `TrendingStrip` hides itself (renders `null`) when trending data never arrived, so no empty shell is left behind. The polling `GeoBanner` is NOT mounted here — Task 17's layout mounts it globally below the header so it shows on every page.
+- [ ] **Step 1: Replace `app/page.tsx`** — client page composing `TrendingStrip` + `MarketsTable`, with pulse skeletons while `useMarket().coins` is still empty (first paint before `/api/markets` resolves). The skeleton gate is `coins.length === 0 && !marketsError`: once `marketsError` flips true the wait is over — `/api/markets` failed with nothing cached — so the real components mount and `MarketsTable` renders its market-data-source-only fallback (notice + Retry, Task 15) instead of the page pulsing forever. `TrendingStrip` hides itself (renders `null`) when trending data never arrived, so no empty shell is left behind. The polling `GeoBanner` is NOT mounted here — Task 17's layout mounts it globally below the header so it shows on every page.
 
   ```tsx
   'use client';
@@ -4653,7 +4653,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
     const coins = useMarket((s) => s.coins);
     const marketsError = useMarket((s) => s.marketsError);
     // Skeletons only while we are still legitimately waiting. Once /api/markets has
-    // failed with nothing cached, hand over to MarketsTable's market-data source-only fallback.
+    // failed with nothing cached, hand over to MarketsTable's market-data-source-only fallback.
     const loading = coins.length === 0 && !marketsError;
 
     return (
@@ -4685,7 +4685,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
   - Skeleton cards + rows flash briefly, then the trending strip (horizontal scroll) and the top-50 table render with logos, sparklines, and star buttons.
   - Price cells flash green/red as live ticks arrive (within ~3 s of load).
   - Open `http://localhost:3000/?polling=1` — the slim GeoBanner ("prices refresh every 30s", mounted globally by Task 17's layout) appears below the header, and the strip and table still render.
-  - CoinGecko-outage check: in DevTools → Network add a request-blocking rule for `*/api/markets*` and reload. The skeletons must give way (not pulse forever) to `MarketsTable`'s amber "Coin metadata unavailable — showing live market-data source data only" notice above the market-data source-only rows; the trending strip is simply absent. Remove the rule, click **Retry** — the full table with logos and sparklines appears.
+  - CoinGecko-outage check: in DevTools → Network add a request-blocking rule for `*/api/markets*` and reload. The skeletons must give way (not pulse forever) to `MarketsTable`'s amber "Coin metadata unavailable — showing live market-data-source data only" notice above the market-data-source-only rows; the trending strip is simply absent. Remove the rule, click **Retry** — the full table with logos and sparklines appears.
 
 ### Task 19: `CandleChart` + coin detail page
 
@@ -4874,7 +4874,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
   }
   ```
 
-- [ ] **Step 2: Create `app/coin/[symbol]/page.tsx`** — client page: resolves the coin from `useMarket` by the lowercase `symbol` route param, stats header (live price, 24h change/high/low/volume from the ticker with `CoinMarket` fallback, dimmed to 50% opacity when the last WS message is older than 60s and status is not `'polling'` — mirrors MarketsTable's staleness rule via `useNow`), `CandleChart`, plus loading, metadata-outage, and unknown-coin states. Ordering matters in the three empty-`coins` branches: this page is entirely metadata-driven (there is no market-data source-only fallback for it), so when `marketsError` is true **and** `coins` is empty it renders "Coin metadata unavailable — try again" with a Retry button calling `refreshMarkets()` from `@/hooks/use-market-feed`; only a genuine still-loading state (no error yet) shows the pulse skeleton. The right-hand column is an **empty placeholder `<aside>`** — Task 20 builds `TradePanel` and replaces it; do NOT import `TradePanel` here (it does not exist yet, and this task must type-check standalone).
+- [ ] **Step 2: Create `app/coin/[symbol]/page.tsx`** — client page: resolves the coin from `useMarket` by the lowercase `symbol` route param, stats header (live price, 24h change/high/low/volume from the ticker with `CoinMarket` fallback, dimmed to 50% opacity when the last WS message is older than 60s and status is not `'polling'` — mirrors MarketsTable's staleness rule via `useNow`), `CandleChart`, plus loading, metadata-outage, and unknown-coin states. Ordering matters in the three empty-`coins` branches: this page is entirely metadata-driven (there is no market-data-source-only fallback for it), so when `marketsError` is true **and** `coins` is empty it renders "Coin metadata unavailable — try again" with a Retry button calling `refreshMarkets()` from `@/hooks/use-market-feed`; only a genuine still-loading state (no error yet) shows the pulse skeleton. The right-hand column is an **empty placeholder `<aside>`** — Task 20 builds `TradePanel` and replaces it; do NOT import `TradePanel` here (it does not exist yet, and this task must type-check standalone).
 
   ```tsx
   'use client';
@@ -5051,7 +5051,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
   - `http://localhost:3000/coin/usdt` — no candle chart; sparkline fallback with "live chart unavailable for this coin".
   - `http://localhost:3000/coin/zzz` — "Coin not found" empty state with a link back to Markets.
   - Metadata-outage check: in DevTools → Network add a request-blocking rule for `*/api/markets*` and reload `/coin/btc` — instead of an endless skeleton the page shows "Coin metadata unavailable — try again" with a Retry button. Remove the rule, click **Retry** — the full coin page renders.
-  - In DevTools → Network, block `data-api.market-data source.vision` and `api.market-data source.com`, reload `/coin/btc` — error overlay with a working Retry button appears; the rest of the page still works.
+  - In DevTools → Network, block `data-api.market-data-source-source.vision` and `api.market-data-source.com`, reload `/coin/btc` — error overlay with a working Retry button appears; the rest of the page still works.
 
 ### Task 20: `TradePanel`
 
@@ -5269,7 +5269,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
 - Create: `app/watchlist/page.tsx`
 - Create: `app/portfolio/page.tsx`
 
-- [ ] **Step 1: Create `app/watchlist/page.tsx`** — starred coins as rows (logo, name/symbol, live `PriceCell` with flash + 60 s staleness graying via `useNow`, 24h %, 7-day `Sparkline`, ✕ remove that doesn't navigate), mounted-gate for localStorage hydration, spec empty state. Skeleton rows are shown only while metadata is genuinely still in flight: if there are starred ids, `coins` is empty **and** `marketsError` is true, the page renders a "Coin metadata unavailable — try again" row with a Retry button calling `refreshMarkets()` from `@/hooks/use-market-feed` (these rows are metadata-driven, so unlike the markets table there is no market-data source-only fallback to show).
+- [ ] **Step 1: Create `app/watchlist/page.tsx`** — starred coins as rows (logo, name/symbol, live `PriceCell` with flash + 60 s staleness graying via `useNow`, 24h %, 7-day `Sparkline`, ✕ remove that doesn't navigate), mounted-gate for localStorage hydration, spec empty state. Skeleton rows are shown only while metadata is genuinely still in flight: if there are starred ids, `coins` is empty **and** `marketsError` is true, the page renders a "Coin metadata unavailable — try again" row with a Retry button calling `refreshMarkets()` from `@/hooks/use-market-feed` (these rows are metadata-driven, so unlike the markets table there is no market-data-source-only fallback to show).
 
   ```tsx
   'use client';
@@ -5706,7 +5706,7 @@ Expected: all test files pass, including `stores/watchlist.test.ts`, `stores/por
 - Create: `playwright.config.ts`
 - Create: `e2e/smoke.spec.ts`
 
-One end-to-end flow per spec §7: land on Markets → see prices → star a coin → open detail → buy → verify Portfolio and Watchlist. All network is mocked: `page.route` serves inline fixtures for `/api/markets` and `/api/trending` (the Next.js route handlers never execute, so CoinGecko is never called), both market-data source REST hosts return an empty `exchangeInfo` (every coin is "unmapped" → no kline fetches, sparkline chart fallback, trades execute at the fixture price), and `?polling=1` forces polling mode so no WebSocket ever opens. This assumes the markup from earlier tasks: MarketsTable (Task 15) is a semantic `<table>` whose per-row star toggle is the row's only `<button>`, and TradePanel (Task 20) uses a `type="number"` amount input (ARIA role `spinbutton`) and a submit button whose accessible name is exactly "Buy BTC" once a valid amount is entered (the Buy/Sell **side tabs** are also buttons, so submit-button locators must use an exact-name match like `/^buy btc$/i`, never a loose `/buy/i`; the "Portfolio" and "Watchlist" link locators are unambiguous because those names appear only in the header nav). If a selector fails, debug with `npx playwright test --debug` and align the selector with the actual markup — the flow itself must not change.
+One end-to-end flow per spec §7: land on Markets → see prices → star a coin → open detail → buy → verify Portfolio and Watchlist. All network is mocked: `page.route` serves inline fixtures for `/api/markets` and `/api/trending` (the Next.js route handlers never execute, so CoinGecko is never called), both market-data-source REST hosts return an empty `exchangeInfo` (every coin is "unmapped" → no kline fetches, sparkline chart fallback, trades execute at the fixture price), and `?polling=1` forces polling mode so no WebSocket ever opens. This assumes the markup from earlier tasks: MarketsTable (Task 15) is a semantic `<table>` whose per-row star toggle is the row's only `<button>`, and TradePanel (Task 20) uses a `type="number"` amount input (ARIA role `spinbutton`) and a submit button whose accessible name is exactly "Buy BTC" once a valid amount is entered (the Buy/Sell **side tabs** are also buttons, so submit-button locators must use an exact-name match like `/^buy btc$/i`, never a loose `/buy/i`; the "Portfolio" and "Watchlist" link locators are unambiguous because those names appear only in the header nav). If a selector fails, debug with `npx playwright test --debug` and align the selector with the actual markup — the flow itself must not change.
 
 - [ ] **Step 1: Create `playwright.config.ts`** — `webServer` boots `npm run dev` automatically; `testDir` is `e2e` so Vitest (include: `**/*.test.ts`) never picks these specs up:
 
@@ -5803,12 +5803,12 @@ test.beforeEach(async ({ page }) => {
   await page.route('**/api/markets', (route) => route.fulfill({ json: marketsFixture }));
   await page.route('**/api/trending', (route) => route.fulfill({ json: trendingFixture }));
 
-  // market-data source REST on both hosts → empty exchangeInfo: every coin is unmapped,
+  // market-data-source REST on both hosts → empty exchangeInfo: every coin is unmapped,
   // so no kline requests happen, the chart falls back to the sparkline, and
   // trades execute at the CoinGecko fixture price. ?polling=1 skips the WS.
   const emptyExchangeInfo = { symbols: [] };
-  await page.route('https://data-api.market-data source.vision/**', (route) => route.fulfill({ json: emptyExchangeInfo }));
-  await page.route('https://api.market-data source.com/**', (route) => route.fulfill({ json: emptyExchangeInfo }));
+  await page.route('https://data-api.market-data-source-source.vision/**', (route) => route.fulfill({ json: emptyExchangeInfo }));
+  await page.route('https://api.market-data-source.com/**', (route) => route.fulfill({ json: emptyExchangeInfo }));
 
   // Fixture logo URLs → 1×1 transparent PNG, so nothing leaves localhost.
   await page.route('https://example.com/**', (route) =>
@@ -5905,14 +5905,14 @@ no backend persistence, no real money.
 
 ## Features
 
-- Top-50 markets table with live prices streamed from the market-data source `!miniTicker@arr`
+- Top-50 markets table with live prices streamed from the market-data-source `!miniTicker@arr`
   WebSocket — price cells flash green/red on every tick
 - CoinGecko trending strip and coin metadata (server-proxied, cached)
 - Realtime candlestick charts (lightweight-charts `lightweight-charts`, 1m/15m/1H/4H/1D)
 - Paper trading: market orders with a simulated 0.1% taker fee, average-cost
   tracking, realized and live unrealized P&L
 - Watchlist (⭐) and portfolio persisted in `localStorage` — survives revisits
-- Graceful degradation: if market-data source is unreachable or geo-blocked, the app drops
+- Graceful degradation: if market-data-source is unreachable or geo-blocked, the app drops
   to a 30-second polling mode with a banner; append `?polling=1` to force it
 
 ## Quickstart
@@ -5941,8 +5941,8 @@ npm run test:e2e    # Playwright smoke flow — fully mocked network, safe for C
 ## Architecture
 
 ```
-Browser ────────────────► wss://data-stream.market-data source.vision    live tickers + klines (keyless)
-   │                      https://data-api.market-data source.vision     kline history, exchangeInfo
+Browser ────────────────► wss://data-stream.market-data-source.vision    live tickers + klines (keyless)
+   │                      https://data-api.market-data-source-source.vision     kline history, exchangeInfo
    │
    └──► Next.js route handlers ────► api.coingecko.com        metadata + trending
          /api/markets  (60s cache)                            (API key stays server-side)
@@ -5955,7 +5955,7 @@ Browser ────────────────► wss://data-stream.ma
 - **The tricky join:** `lib/symbol-map.ts` maps ticker symbols to USDT pairs
   via `exchangeInfo` (`stores/market.ts` joins CoinGecko ids to symbols). Every coin
   — mapped or not — is refreshed from `/api/markets` on a 60s client timer; coins
-  with a market-data source pair additionally get live WebSocket ticks between refreshes. So
+  with a market-data-source pair additionally get live WebSocket ticks between refreshes. So
   unmapped coins are first-class: they simply move at the 60s CoinGecko cadence.
 - **Pages:** `/` Markets · `/coin/[symbol]` chart + trade · `/watchlist` · `/portfolio`.
 - Components read stores and never touch the network; the WebSocket manager writes
@@ -5965,7 +5965,7 @@ Browser ────────────────► wss://data-stream.ma
 
 - [ ] Open the deployed site on a real phone — layout holds, prices tick, a full trade works
 - [ ] Browse with an adblocker enabled — nothing breaks visually or functionally
-- [ ] Force the market-data source-blocked path with `?polling=1` — banner shows, prices refresh every 30s, trading still works
+- [ ] Force the market-data-source-blocked path with `?polling=1` — banner shows, prices refresh every 30s, trading still works
 - [ ] Throttle to 3G in DevTools — first paint is acceptable; on a normal connection prices tick within ~3s of landing
 - [ ] Reset demo on `/portfolio` — restores $100,000, clears holdings and history, watchlist untouched
 
@@ -5973,7 +5973,7 @@ Browser ────────────────► wss://data-stream.ma
 
 - Market metadata: [Powered by CoinGecko](https://www.coingecko.com)
 - Charts: lightweight-charts [lightweight-charts](https://github.com/lightweight-charts/lightweight-charts) (Apache-2.0, attribution logo enabled)
-- Live market data: market-data source public market-data endpoints
+- Live market data: market-data-source public market-data endpoints
 ````
 
 - [ ] **Step 2: Verify the README structure**
@@ -6070,7 +6070,7 @@ Expected output ends with:
 
 That URL is the live demo. All remaining steps run against it.
 
-- [ ] **Step 7: Verify — live tick within 3 seconds.** Open the production URL in a fresh incognito window. Within ~3s of landing the connection badge should read streaming (⚡) and at least one price cell should flash green/red. If your region is geo-blocked by market-data source, the polling banner must appear instead and prices must still render — either state is a pass; a blank table is a fail.
+- [ ] **Step 7: Verify — live tick within 3 seconds.** Open the production URL in a fresh incognito window. Within ~3s of landing the connection badge should read streaming (⚡) and at least one price cell should flash green/red. If your region is geo-blocked by market-data-source, the polling banner must appear instead and prices must still render — either state is a pass; a blank table is a fail.
 
 - [ ] **Step 8: Verify — trade flow on the deployed URL.** On production: star BTC on Markets → open `/coin/btc` → buy `0.05` → "Order filled" toast → `/portfolio` shows the position, updated cash, and the trade in history → `/watchlist` shows BTC. Then use Reset demo (confirm dialog) and check cash returns to $100,000 with the watchlist untouched.
 
